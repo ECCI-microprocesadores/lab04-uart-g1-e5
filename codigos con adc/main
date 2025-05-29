@@ -1,0 +1,33 @@
+#include <xc.h>
+#include "ADC_POT1.h"
+#include "uart.h"
+
+#pragma config FOSC = INTIO67   // Oscilador interno
+#pragma config PLLCFG = ON      // PLL habilitado
+#pragma config WDTEN = OFF      // Watchdog deshabilitado
+#pragma config LVP = OFF        // Low Voltage Programming off
+
+#define _XTAL_FREQ 64000000UL   // Frecuencia del sistema
+
+void main(void) {
+    // Configuración del sistema
+    OSCCON = 0b01110000;        // Frecuencia a 16MHz
+    OSCTUNEbits.PLLEN = 1;      // PLL ON (16x4 = 64MHz)
+    
+    // Inicialización de módulos
+    UART_Init();                // Configura UART
+    setupADC();                 // Configura ADC
+    
+    UART_WriteString("Sistema iniciado\r\n");
+    UART_WriteString("Leyendo voltaje del ADC...\r\n\r\n");
+
+    // Bucle principal
+    while(1) {
+        // Lee y envía el voltaje
+        UART_WriteString("Voltaje: ");
+        UART_WriteVoltage(readADC());
+        UART_WriteString(" V\r\n");
+        
+        __delay_ms(500);        // Retardo entre lecturas
+    }
+}
